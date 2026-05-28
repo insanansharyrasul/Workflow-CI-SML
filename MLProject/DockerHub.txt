@@ -1,0 +1,4 @@
+Docker Hub target:
+https://hub.docker.com/r/insanar/smsml-mlflow
+
+Update the image name in .github/workflows/ci.yml if needed.
