@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 
@@ -64,9 +65,10 @@ def train(data_path: Path, output_dir: Path, n_estimators: int, max_depth: int) 
         x_features, y_target, test_size=0.2, random_state=42, stratify=y_target
     )
 
-    mlflow.set_experiment("workflow_ci_training")
+    if not os.getenv("MLFLOW_EXPERIMENT_ID") and not os.getenv("MLFLOW_RUN_ID"):
+        mlflow.set_experiment("workflow_ci_training")
 
-    with mlflow.start_run():
+    def log_and_save() -> None:
         model = RandomForestClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
@@ -95,6 +97,13 @@ def train(data_path: Path, output_dir: Path, n_estimators: int, max_depth: int) 
         output_dir.mkdir(parents=True, exist_ok=True)
         mlflow.sklearn.save_model(model, output_dir)
         (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2))
+
+    run_id = os.getenv("MLFLOW_RUN_ID")
+    if mlflow.active_run() is None:
+        with mlflow.start_run(run_id=run_id):
+            log_and_save()
+    else:
+        log_and_save()
 
 
 def main() -> None:
