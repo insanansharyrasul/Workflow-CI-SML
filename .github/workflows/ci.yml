@@ -13,7 +13,7 @@ permissions:
 env:
   DOCKER_IMAGE: insanar/smsml-mlflow
   MODEL_DIR: MLProject/artifacts/model
-  DATA_PATH: dataset_preprocessing/processed.csv
+  DATA_PATH: MLProject/dataset_preprocessing/processed.csv
 
 jobs:
   train:
@@ -31,7 +31,7 @@ jobs:
         run: |
           mlflow run MLProject --env-manager=local \
             -P data_path=${{ env.DATA_PATH }} \
-            -P output_dir=artifacts/model
+            -P output_dir=${{ env.MODEL_DIR }}
       - name: Upload model artifact
         uses: actions/upload-artifact@v4
         with:
